@@ -24,18 +24,19 @@ app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
-app.get('/api/:date', (req, res) => {
-  let date = req.params.date.split('-');
-  if ( date.length === 1 ) {
-    // input is in unix
-    utc = new Date( Date.UTC(date[0], date[1], date[2]) );
-    
-  }
-  else {
-    // input is in utc
-    unix = Math.floor(new Date(date[0], date[1], date[2]).getTime() / 1000);
-  }
-  res.json({'unix': unix, 'utc': utc});
+app.get('/api/:date?', (req, res) => {
+  const givenDate = req.params.date;
+  let date;
+  if (!givenDate)
+    // No date provided
+    date = new Date();
+  else
+    // check if unix time (1 * unix gives a number and 1*data string gives NaN)
+    date = isNaN(givenDate * 1) ? new Date(givenDate) : new Date(givenDate * 1);
+
+  if ( date == 'Invalid Date' ) res.json({error: 'Invalid Date'});
+  else 
+    res.send( {'unix': date.getTime(), 'utc': date.toUTCString()} );
 });
 
 
